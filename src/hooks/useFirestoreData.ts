@@ -170,18 +170,18 @@ export const useFirestoreData = () => {
       // Helper function to create listener with fallback
       const createListenerWithFallback = async (
         collectionName: string,
-        dataKey: keyof FirestoreData,
-        retryCount = 0
+        dataKey: keyof FirestoreData
       ) => {
         try {
-          const q = query(
+          // First try with ordering
+          const orderedQuery = query(
             collection(db, collectionName),
             where('userId', '==', authUser.uid),
             orderBy('createdAt', 'desc')
           );
           
           const unsubscribe = onSnapshot(
-            q,
+            orderedQuery,
             (snapshot) => {
               const items = snapshot.docs.map(doc => ({
                 id: doc.id,
@@ -195,17 +195,11 @@ export const useFirestoreData = () => {
             (error) => {
               console.error(`Error in ${collectionName} listener:`, error);
               
-              // If it's an index error and we haven't retried too many times
-              if (error.message.includes('index') && retryCount < 3) {
-                console.log(`Retrying ${collectionName} listener in 5 seconds...`);
-                setTimeout(() => {
-                  createListenerWithFallback(collectionName, dataKey, retryCount + 1);
-                }, 5000);
-              } else if (error.code === 'permission-denied') {
-                setError(`Permission denied accessing ${collectionName}. Please check your Firebase security rules.`);
-              } else if (error.message.includes('index')) {
-                // For index errors, try a simpler query without ordering
-                console.log(`Falling back to simple query for ${collectionName}`);
+              // If it's an index error, immediately fall back to simple query
+              if (error.message.includes('index') || error.message.includes('requires an index')) {
+                console.log(`Index not ready for ${collectionName}, using fallback query without ordering`);
+                
+                // Create simple query without ordering
                 const simpleQuery = query(
                   collection(db, collectionName),
                   where('userId', '==', authUser.uid)
@@ -218,12 +212,14 @@ export const useFirestoreData = () => {
                       id: doc.id,
                       ...doc.data()
                     }));
-                    // Sort manually by createdAt
+                    
+                    // Sort manually by createdAt if the field exists
                     items.sort((a: any, b: any) => {
-                      const aTime = a.createdAt?.toMillis() || 0;
-                      const bTime = b.createdAt?.toMillis() || 0;
-                      return bTime - aTime;
+                      const aTime = a.createdAt?.toMillis?.() || 0;
+                      const bTime = b.createdAt?.toMillis?.() || 0;
+                      return bTime - aTime; // Descending order (newest first)
                     });
+                    
                     setData(prevData => ({
                       ...prevData!,
                       [dataKey]: items
@@ -231,10 +227,20 @@ export const useFirestoreData = () => {
                   },
                   (fallbackError) => {
                     console.error(`Fallback error for ${collectionName}:`, fallbackError);
-                    setError(`Failed to load ${collectionName}. Please refresh the page.`);
+                    if (fallbackError.code === 'permission-denied') {
+                      setError(`Permission denied accessing ${collectionName}. Please check your Firebase security rules.`);
+                    } else {
+                      setError(`Failed to load ${collectionName}. Please refresh the page.`);
+                    }
                   }
                 );
+                
+                // Remove the failed listener and add the fallback
                 unsubscribers.push(fallbackUnsubscribe);
+              } else if (error.code === 'permission-denied') {
+                setError(`Permission denied accessing ${collectionName}. Please check your Firebase security rules.`);
+              } else {
+                setError(`Failed to load ${collectionName}. Please refresh the page.`);
               }
             }
           );
@@ -242,7 +248,51 @@ export const useFirestoreData = () => {
           unsubscribers.push(unsubscribe);
         } catch (error: any) {
           console.error(`Error setting up ${collectionName} listener:`, error);
-          setError(`Failed to set up ${collectionName} listener. Please refresh the page.`);
+          
+          // If we can't even set up the ordered query, go straight to simple query
+          console.log(`Cannot set up ordered query for ${collectionName}, using simple query`);
+          
+          try {
+            const simpleQuery = query(
+              collection(db, collectionName),
+              where('userId', '==', authUser.uid)
+            );
+            
+            const fallbackUnsubscribe = onSnapshot(
+              simpleQuery,
+              (snapshot) => {
+                const items = snapshot.docs.map(doc => ({
+                  id: doc.id,
+                  ...doc.data()
+                }));
+                
+                // Sort manually by createdAt if the field exists
+                items.sort((a: any, b: any) => {
+                  const aTime = a.createdAt?.toMillis?.() || 0;
+                  const bTime = b.createdAt?.toMillis?.() || 0;
+                  return bTime - aTime; // Descending order (newest first)
+                });
+                
+                setData(prevData => ({
+                  ...prevData!,
+                  [dataKey]: items
+                }));
+              },
+              (fallbackError) => {
+                console.error(`Fallback error for ${collectionName}:`, fallbackError);
+                if (fallbackError.code === 'permission-denied') {
+                  setError(`Permission denied accessing ${collectionName}. Please check your Firebase security rules.`);
+                } else {
+                  setError(`Failed to load ${collectionName}. Please refresh the page.`);
+                }
+              }
+            );
+            
+            unsubscribers.push(fallbackUnsubscribe);
+          } catch (fallbackError: any) {
+            console.error(`Error setting up fallback ${collectionName} listener:`, fallbackError);
+            setError(`Failed to set up ${collectionName} listener. Please refresh the page.`);
+          }
         }
       };
 
