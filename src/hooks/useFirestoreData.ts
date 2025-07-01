@@ -117,7 +117,34 @@ export const useFirestoreData = () => {
           };
           await setDoc(doc(db, 'users', authUser.uid), userData);
         } else {
-          userData = userDoc.data() as User;
+          const existingData = userDoc.data();
+          // Ensure all numeric properties have default values if missing or undefined
+          userData = {
+            id: authUser.uid,
+            name: existingData.name || authUser.displayName || 'User',
+            email: existingData.email || authUser.email || '',
+            xp: typeof existingData.xp === 'number' ? existingData.xp : 0,
+            level: typeof existingData.level === 'number' ? existingData.level : 1,
+            xpToNextLevel: typeof existingData.xpToNextLevel === 'number' ? existingData.xpToNextLevel : 100,
+            streak: typeof existingData.streak === 'number' ? existingData.streak : 0,
+            avatar: existingData.avatar || authUser.photoURL || 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
+            address: existingData.address,
+            homeName: existingData.homeName,
+            roommates: existingData.roommates
+          };
+          
+          // Update the document with default values if any were missing
+          if (typeof existingData.xp !== 'number' || 
+              typeof existingData.level !== 'number' || 
+              typeof existingData.xpToNextLevel !== 'number' || 
+              typeof existingData.streak !== 'number') {
+            await updateDoc(doc(db, 'users', authUser.uid), {
+              xp: userData.xp,
+              level: userData.level,
+              xpToNextLevel: userData.xpToNextLevel,
+              streak: userData.streak
+            });
+          }
         }
 
         setData(prevData => ({
