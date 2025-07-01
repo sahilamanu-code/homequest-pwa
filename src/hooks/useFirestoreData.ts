@@ -89,17 +89,20 @@ interface FirestoreData {
 export const useFirestoreData = () => {
   const [data, setData] = useState<FirestoreData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user: authUser } = useAuth();
 
   useEffect(() => {
     if (!authUser) {
       setData(null);
       setLoading(false);
+      setError(null);
       return;
     }
 
     const fetchUserData = async () => {
       try {
+        setError(null);
         const userDoc = await getDoc(doc(db, 'users', authUser.uid));
         let userData: User;
 
@@ -151,84 +154,125 @@ export const useFirestoreData = () => {
           ...prevData!,
           user: userData
         }));
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching user data:', error);
+        if (error.code === 'permission-denied') {
+          setError('Permission denied. Please check your Firebase security rules.');
+        } else {
+          setError('Failed to load user data. Please try again.');
+        }
       }
     };
 
     const setupRealtimeListeners = () => {
       const unsubscribers: (() => void)[] = [];
 
-      // Chores listener
+      // Chores listener with error handling
       const choresQuery = query(
         collection(db, 'chores'),
         where('userId', '==', authUser.uid),
         orderBy('createdAt', 'desc')
       );
-      const unsubChores = onSnapshot(choresQuery, (snapshot) => {
-        const chores = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Chore[];
-        setData(prevData => ({
-          ...prevData!,
-          chores
-        }));
-      });
+      const unsubChores = onSnapshot(
+        choresQuery, 
+        (snapshot) => {
+          const chores = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as Chore[];
+          setData(prevData => ({
+            ...prevData!,
+            chores
+          }));
+        },
+        (error) => {
+          console.error('Error in chores listener:', error);
+          if (error.code === 'permission-denied') {
+            setError('Permission denied accessing chores. Please check your Firebase security rules.');
+          }
+        }
+      );
       unsubscribers.push(unsubChores);
 
-      // Bills listener
+      // Bills listener with error handling
       const billsQuery = query(
         collection(db, 'bills'),
         where('userId', '==', authUser.uid),
         orderBy('createdAt', 'desc')
       );
-      const unsubBills = onSnapshot(billsQuery, (snapshot) => {
-        const bills = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Bill[];
-        setData(prevData => ({
-          ...prevData!,
-          bills
-        }));
-      });
+      const unsubBills = onSnapshot(
+        billsQuery, 
+        (snapshot) => {
+          const bills = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as Bill[];
+          setData(prevData => ({
+            ...prevData!,
+            bills
+          }));
+        },
+        (error) => {
+          console.error('Error in bills listener:', error);
+          if (error.code === 'permission-denied') {
+            setError('Permission denied accessing bills. Please check your Firebase security rules.');
+          }
+        }
+      );
       unsubscribers.push(unsubBills);
 
-      // Lists listener
+      // Lists listener with error handling
       const listsQuery = query(
         collection(db, 'lists'),
         where('userId', '==', authUser.uid),
         orderBy('createdAt', 'desc')
       );
-      const unsubLists = onSnapshot(listsQuery, (snapshot) => {
-        const lists = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as List[];
-        setData(prevData => ({
-          ...prevData!,
-          lists
-        }));
-      });
+      const unsubLists = onSnapshot(
+        listsQuery, 
+        (snapshot) => {
+          const lists = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as List[];
+          setData(prevData => ({
+            ...prevData!,
+            lists
+          }));
+        },
+        (error) => {
+          console.error('Error in lists listener:', error);
+          if (error.code === 'permission-denied') {
+            setError('Permission denied accessing lists. Please check your Firebase security rules.');
+          }
+        }
+      );
       unsubscribers.push(unsubLists);
 
-      // Feed listener
+      // Feed listener with error handling
       const feedQuery = query(
         collection(db, 'feed'),
         where('userId', '==', authUser.uid),
         orderBy('createdAt', 'desc')
       );
-      const unsubFeed = onSnapshot(feedQuery, (snapshot) => {
-        const feed = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as FeedItem[];
-        setData(prevData => ({
-          ...prevData!,
-          feed
-        }));
-      });
+      const unsubFeed = onSnapshot(
+        feedQuery, 
+        (snapshot) => {
+          const feed = snapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          })) as FeedItem[];
+          setData(prevData => ({
+            ...prevData!,
+            feed
+          }));
+        },
+        (error) => {
+          console.error('Error in feed listener:', error);
+          if (error.code === 'permission-denied') {
+            setError('Permission denied accessing feed. Please check your Firebase security rules.');
+          }
+        }
+      );
       unsubscribers.push(unsubFeed);
 
       return () => {
@@ -238,6 +282,7 @@ export const useFirestoreData = () => {
 
     const initializeData = async () => {
       setLoading(true);
+      setError(null);
       
       // Initialize data structure
       setData({
@@ -267,8 +312,11 @@ export const useFirestoreData = () => {
     
     try {
       await updateDoc(doc(db, 'chores', choreId), updates);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating chore:', error);
+      if (error.code === 'permission-denied') {
+        setError('Permission denied updating chore. Please check your Firebase security rules.');
+      }
     }
   };
 
@@ -281,8 +329,11 @@ export const useFirestoreData = () => {
         userId: authUser.uid,
         createdAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding chore:', error);
+      if (error.code === 'permission-denied') {
+        setError('Permission denied adding chore. Please check your Firebase security rules.');
+      }
     }
   };
 
@@ -323,8 +374,11 @@ export const useFirestoreData = () => {
           createdAt: Timestamp.now()
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user XP:', error);
+      if (error.code === 'permission-denied') {
+        setError('Permission denied updating XP. Please check your Firebase security rules.');
+      }
     }
   };
 
@@ -333,8 +387,11 @@ export const useFirestoreData = () => {
     
     try {
       await updateDoc(doc(db, 'users', authUser.uid), updates);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user profile:', error);
+      if (error.code === 'permission-denied') {
+        setError('Permission denied updating profile. Please check your Firebase security rules.');
+      }
     }
   };
 
@@ -347,8 +404,11 @@ export const useFirestoreData = () => {
         userId: authUser.uid,
         createdAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding bill:', error);
+      if (error.code === 'permission-denied') {
+        setError('Permission denied adding bill. Please check your Firebase security rules.');
+      }
     }
   };
 
@@ -357,8 +417,11 @@ export const useFirestoreData = () => {
     
     try {
       await updateDoc(doc(db, 'bills', billId), updates);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating bill:', error);
+      if (error.code === 'permission-denied') {
+        setError('Permission denied updating bill. Please check your Firebase security rules.');
+      }
     }
   };
 
@@ -371,8 +434,11 @@ export const useFirestoreData = () => {
         userId: authUser.uid,
         createdAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding list:', error);
+      if (error.code === 'permission-denied') {
+        setError('Permission denied adding list. Please check your Firebase security rules.');
+      }
     }
   };
 
@@ -381,8 +447,11 @@ export const useFirestoreData = () => {
     
     try {
       await updateDoc(doc(db, 'lists', listId), updates);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating list:', error);
+      if (error.code === 'permission-denied') {
+        setError('Permission denied updating list. Please check your Firebase security rules.');
+      }
     }
   };
 
@@ -390,6 +459,8 @@ export const useFirestoreData = () => {
     if (!authUser) return;
 
     try {
+      setError(null);
+      
       // Create sample grocery list
       await addList({
         name: 'Grocery List',
@@ -429,14 +500,25 @@ export const useFirestoreData = () => {
         userId: authUser.uid,
         createdAt: Timestamp.now()
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating initial data:', error);
+      if (error.code === 'permission-denied') {
+        setError('Permission denied creating initial data. Please check your Firebase security rules.');
+      } else {
+        setError('Failed to create initial data. Please try again.');
+      }
     }
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   return { 
     data, 
     loading, 
+    error,
+    clearError,
     updateChore, 
     addChore,
     updateUserXP, 

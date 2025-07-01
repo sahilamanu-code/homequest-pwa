@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckSquare, CreditCard, List, User, LogOut, Menu, Download, Home, Plus } from 'lucide-react';
+import { CheckSquare, CreditCard, List, User, LogOut, Menu, Download, Home, Plus, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useFirestoreData } from '../hooks/useFirestoreData';
 import XPBar from './XPBar';
@@ -14,7 +14,7 @@ const Dashboard: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const { logout } = useAuth();
-  const { data, loading, updateChore, updateUserXP, createInitialData } = useFirestoreData();
+  const { data, loading, error, clearError, updateChore, updateUserXP, createInitialData } = useFirestoreData();
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -97,6 +97,30 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* Error Banner */}
+      {error && (
+        <div className="bg-red-50 border-b border-red-200 text-red-800 p-4 shadow-sm">
+          <div className="flex items-center justify-between max-w-4xl mx-auto">
+            <div className="flex items-center space-x-3">
+              <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Firebase Permission Error</p>
+                <p className="text-sm text-red-600 mt-1">{error}</p>
+                <p className="text-xs text-red-500 mt-2">
+                  Please ensure your Firebase Security Rules allow authenticated users to read/write their own data.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={clearError}
+              className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Install Prompt */}
       {showInstallPrompt && (
         <div className="bg-white/90 backdrop-blur-xl border-b border-gray-200/50 text-gray-800 p-3 shadow-lg">
