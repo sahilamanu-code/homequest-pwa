@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Mail, Trophy, Calendar, LogOut, Settings, Camera, Crown, Star } from 'lucide-react';
+import { User, Mail, Trophy, Calendar, LogOut, Settings, Camera, Crown, Star, Flame } from 'lucide-react';
 
 interface User {
   id: string;
