@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckSquare, CreditCard, List, Activity, User, LogOut, Menu } from 'lucide-react';
+import { CheckSquare, CreditCard, List, Activity, User, LogOut, Menu, Download } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useMockData } from '../hooks/useMockData';
 import XPBar from './XPBar';
@@ -62,8 +62,11 @@ const Dashboard: React.FC = () => {
 
   if (loading || !data) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="relative">
+          <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-500 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-500 rounded-full animate-spin animation-delay-150"></div>
+        </div>
       </div>
     );
   }
@@ -86,22 +89,25 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       {/* Install Prompt */}
       {showInstallPrompt && (
-        <div className="bg-indigo-600 text-white p-4 text-center">
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 shadow-lg">
           <div className="flex items-center justify-between max-w-md mx-auto">
-            <span className="text-sm">Install HomeQuest for a better experience</span>
-            <div className="space-x-2">
+            <div className="flex items-center space-x-2">
+              <Download className="w-4 h-4" />
+              <span className="text-sm font-medium">Install HomeQuest for better experience</span>
+            </div>
+            <div className="flex items-center space-x-2">
               <button
                 onClick={handleInstallClick}
-                className="bg-white text-indigo-600 px-3 py-1 rounded text-sm font-medium"
+                className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-white/30 transition-all"
               >
                 Install
               </button>
               <button
                 onClick={() => setShowInstallPrompt(false)}
-                className="text-indigo-200 hover:text-white text-sm"
+                className="text-white/80 hover:text-white text-lg leading-none"
               >
                 ×
               </button>
@@ -111,15 +117,21 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* Header */}
-      <div className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">HomeQuest</h1>
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-xl"></div>
+        <div className="relative px-6 py-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+                HomeQuest
+              </h1>
+              <p className="text-purple-200 text-sm mt-1">Level up your daily life</p>
+            </div>
             <button
               onClick={logout}
-              className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+              className="p-2 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
             >
-              <LogOut className="w-6 h-6" />
+              <LogOut className="w-5 h-5" />
             </button>
           </div>
           <XPBar
@@ -132,31 +144,38 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="px-4 pb-20">
+      <div className="px-6 pb-24 pt-4">
         {renderTabContent()}
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-2">
-        <div className="flex justify-around">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col items-center p-2 rounded-lg transition-all ${
-                  isActive
-                    ? 'text-indigo-600 bg-indigo-50'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                <Icon className="w-6 h-6 mb-1" />
-                <span className="text-xs font-medium">{tab.label}</span>
-              </button>
-            );
-          })}
+      {/* Bottom Navigation - Redesigned to be much smaller and sleeker */}
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <div className="mx-4 mb-4">
+          <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl">
+            <div className="flex justify-around items-center">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`relative flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105'
+                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5 mb-1" />
+                    <span className="text-xs font-medium">{tab.label}</span>
+                    {isActive && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full"></div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
     </div>

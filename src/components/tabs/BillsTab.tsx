@@ -1,5 +1,5 @@
 import React from 'react';
-import { DollarSign, Calendar, AlertCircle, CheckCircle } from 'lucide-react';
+import { DollarSign, Calendar, AlertCircle, CheckCircle, CreditCard } from 'lucide-react';
 
 interface Bill {
   id: string;
@@ -34,26 +34,26 @@ const BillsTab: React.FC<BillsTabProps> = ({ bills }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
-        return 'bg-green-100 text-green-800';
+        return 'from-green-500 to-emerald-500';
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'from-yellow-500 to-orange-500';
       case 'overdue':
-        return 'bg-red-100 text-red-800';
+        return 'from-red-500 to-pink-500';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'from-gray-500 to-slate-500';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'paid':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
+        return <CheckCircle className="w-5 h-5 text-green-400" />;
       case 'pending':
-        return <Calendar className="w-5 h-5 text-yellow-600" />;
+        return <Calendar className="w-5 h-5 text-yellow-400" />;
       case 'overdue':
-        return <AlertCircle className="w-5 h-5 text-red-600" />;
+        return <AlertCircle className="w-5 h-5 text-red-400" />;
       default:
-        return <Calendar className="w-5 h-5 text-gray-600" />;
+        return <Calendar className="w-5 h-5 text-gray-400" />;
     }
   };
 
@@ -64,49 +64,59 @@ const BillsTab: React.FC<BillsTabProps> = ({ bills }) => {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center space-x-2 mb-6">
+        <CreditCard className="w-6 h-6 text-purple-400" />
+        <h2 className="text-2xl font-bold text-white">Financial Overview</h2>
+      </div>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <DollarSign className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-600">Total Bills</span>
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl p-2">
+              <DollarSign className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-sm font-medium text-purple-200">Total Bills</span>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{formatAmount(totalAmount)}</p>
+          <p className="text-3xl font-bold text-white">{formatAmount(totalAmount)}</p>
         </div>
-        <div className="bg-white rounded-xl shadow-sm p-4">
-          <div className="flex items-center space-x-2 mb-2">
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
-            <span className="text-sm font-medium text-gray-600">Pending</span>
+        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl">
+          <div className="flex items-center space-x-3 mb-3">
+            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-2">
+              <AlertCircle className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-sm font-medium text-purple-200">Pending</span>
           </div>
-          <p className="text-2xl font-bold text-yellow-600">{formatAmount(pendingAmount)}</p>
+          <p className="text-3xl font-bold text-yellow-400">{formatAmount(pendingAmount)}</p>
         </div>
       </div>
 
       {/* Bills List */}
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Bills</h2>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {bills.map((bill) => (
-            <div key={bill.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+            <div key={bill.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 shadow-xl">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  {getStatusIcon(bill.status)}
+                <div className="flex items-center space-x-4">
+                  <div className="bg-white/10 rounded-xl p-3">
+                    {getStatusIcon(bill.status)}
+                  </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">{bill.name}</h3>
-                    <p className="text-sm text-gray-600 capitalize">{bill.category}</p>
+                    <h3 className="font-bold text-white text-lg">{bill.name}</h3>
+                    <p className="text-purple-200 capitalize">{bill.category}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-gray-900">{formatAmount(bill.amount)}</p>
-                  <p className="text-sm text-gray-500">Due {formatDate(bill.dueDate)}</p>
+                  <p className="font-bold text-white text-xl">{formatAmount(bill.amount)}</p>
+                  <p className="text-purple-200 text-sm">Due {formatDate(bill.dueDate)}</p>
                 </div>
               </div>
-              <div className="mt-3 flex items-center justify-between">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize ${getStatusColor(bill.status)}`}>
-                  {bill.status}
-                </span>
+              <div className="mt-4 flex items-center justify-between">
+                <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r ${getStatusColor(bill.status)} shadow-lg`}>
+                  {bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
+                </div>
                 {bill.status === 'pending' && (
-                  <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium transition-colors">
+                  <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-xl font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg">
                     {/* TODO: Implement payment processing */}
                     Pay Now
                   </button>
