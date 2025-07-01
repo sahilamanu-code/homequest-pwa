@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { CheckSquare, CreditCard, List, Activity, User, LogOut, Menu, Download } from 'lucide-react';
+import { CheckSquare, CreditCard, List, User, LogOut, Menu, Download, Home, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useMockData } from '../hooks/useMockData';
 import XPBar from './XPBar';
 import ChoresTab from './tabs/ChoresTab';
 import BillsTab from './tabs/BillsTab';
 import ListTab from './tabs/ListTab';
-import FeedTab from './tabs/FeedTab';
 import ProfileTab from './tabs/ProfileTab';
+import HomeTab from './tabs/HomeTab';
 
 const Dashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('chores');
+  const [activeTab, setActiveTab] = useState('home');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const { logout } = useAuth();
@@ -53,19 +53,19 @@ const Dashboard: React.FC = () => {
   };
 
   const tabs = [
+    { id: 'home', label: 'Home', icon: Home },
     { id: 'chores', label: 'Chores', icon: CheckSquare },
     { id: 'bills', label: 'Bills', icon: CreditCard },
     { id: 'list', label: 'List', icon: List },
-    { id: 'feed', label: 'Feed', icon: Activity },
     { id: 'profile', label: 'Profile', icon: User },
   ];
 
   if (loading || !data) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-purple-200 border-t-purple-500 rounded-full animate-spin"></div>
-          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-pink-500 rounded-full animate-spin animation-delay-150"></div>
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-pink-500 rounded-full animate-spin"></div>
+          <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-t-blue-500 rounded-full animate-spin animation-delay-150"></div>
         </div>
       </div>
     );
@@ -73,41 +73,41 @@ const Dashboard: React.FC = () => {
 
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'home':
+        return <HomeTab feed={data.feed} chores={data.chores} onChoreComplete={handleChoreComplete} />;
       case 'chores':
         return <ChoresTab chores={data.chores} onChoreComplete={handleChoreComplete} />;
       case 'bills':
         return <BillsTab bills={data.bills} />;
       case 'list':
         return <ListTab lists={data.lists} />;
-      case 'feed':
-        return <FeedTab feed={data.feed} />;
       case 'profile':
         return <ProfileTab user={data.user} onLogout={logout} />;
       default:
-        return <ChoresTab chores={data.chores} onChoreComplete={handleChoreComplete} />;
+        return <HomeTab feed={data.feed} chores={data.chores} onChoreComplete={handleChoreComplete} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Install Prompt */}
       {showInstallPrompt && (
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 shadow-lg">
+        <div className="bg-white/90 backdrop-blur-xl border-b border-gray-200/50 text-gray-800 p-3 shadow-lg">
           <div className="flex items-center justify-between max-w-md mx-auto">
             <div className="flex items-center space-x-2">
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 text-pink-500" />
               <span className="text-sm font-medium">Install HomeQuest for better experience</span>
             </div>
             <div className="flex items-center space-x-2">
               <button
                 onClick={handleInstallClick}
-                className="bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-white/30 transition-all"
+                className="bg-pink-500 text-white px-3 py-1 rounded-full text-sm font-medium hover:bg-pink-600 transition-all shadow-lg"
               >
                 Install
               </button>
               <button
                 onClick={() => setShowInstallPrompt(false)}
-                className="text-white/80 hover:text-white text-lg leading-none"
+                className="text-gray-500 hover:text-gray-700 text-lg leading-none"
               >
                 ×
               </button>
@@ -118,18 +118,18 @@ const Dashboard: React.FC = () => {
 
       {/* Header */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20 backdrop-blur-xl"></div>
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-xl border-b border-gray-200/50"></div>
         <div className="relative px-6 py-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-gray-900">
                 HomeQuest
               </h1>
-              <p className="text-purple-200 text-sm mt-1">Level up your daily life</p>
+              <p className="text-gray-600 text-sm mt-1">Level up your daily life</p>
             </div>
             <button
               onClick={logout}
-              className="p-2 text-purple-200 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200"
+              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200 backdrop-blur-sm"
             >
               <LogOut className="w-5 h-5" />
             </button>
@@ -148,10 +148,10 @@ const Dashboard: React.FC = () => {
         {renderTabContent()}
       </div>
 
-      {/* Bottom Navigation - Redesigned to be much smaller and sleeker */}
+      {/* Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 z-50">
         <div className="mx-4 mb-4">
-          <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl">
+          <div className="bg-white/90 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-2 shadow-xl">
             <div className="flex justify-around items-center">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -162,8 +162,8 @@ const Dashboard: React.FC = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`relative flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${
                       isActive
-                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105'
-                        : 'text-gray-400 hover:text-white hover:bg-white/10'
+                        ? 'bg-pink-500 text-white shadow-lg scale-105'
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
                     }`}
                   >
                     <Icon className="w-5 h-5 mb-1" />

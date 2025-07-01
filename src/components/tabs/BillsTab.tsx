@@ -34,26 +34,26 @@ const BillsTab: React.FC<BillsTabProps> = ({ bills }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid':
-        return 'from-green-500 to-emerald-500';
+        return 'from-green-100 to-emerald-100 border-green-200';
       case 'pending':
-        return 'from-yellow-500 to-orange-500';
+        return 'from-yellow-100 to-orange-100 border-yellow-200';
       case 'overdue':
-        return 'from-red-500 to-pink-500';
+        return 'from-red-100 to-pink-100 border-red-200';
       default:
-        return 'from-gray-500 to-slate-500';
+        return 'from-gray-100 to-slate-100 border-gray-200';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'paid':
-        return <CheckCircle className="w-5 h-5 text-green-400" />;
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
       case 'pending':
-        return <Calendar className="w-5 h-5 text-yellow-400" />;
+        return <Calendar className="w-5 h-5 text-yellow-500" />;
       case 'overdue':
-        return <AlertCircle className="w-5 h-5 text-red-400" />;
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
       default:
-        return <Calendar className="w-5 h-5 text-gray-400" />;
+        return <Calendar className="w-5 h-5 text-gray-500" />;
     }
   };
 
@@ -65,29 +65,29 @@ const BillsTab: React.FC<BillsTabProps> = ({ bills }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-2 mb-6">
-        <CreditCard className="w-6 h-6 text-purple-400" />
-        <h2 className="text-2xl font-bold text-white">Financial Overview</h2>
+        <CreditCard className="w-6 h-6 text-gray-700" />
+        <h2 className="text-2xl font-bold text-gray-900">Financial Overview</h2>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl">
+        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg">
           <div className="flex items-center space-x-3 mb-3">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl p-2">
-              <DollarSign className="w-5 h-5 text-white" />
+            <div className="bg-blue-100 rounded-xl p-2">
+              <DollarSign className="w-5 h-5 text-blue-600" />
             </div>
-            <span className="text-sm font-medium text-purple-200">Total Bills</span>
+            <span className="text-sm font-medium text-gray-600">Total Bills</span>
           </div>
-          <p className="text-3xl font-bold text-white">{formatAmount(totalAmount)}</p>
+          <p className="text-3xl font-bold text-gray-900">{formatAmount(totalAmount)}</p>
         </div>
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl">
+        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg">
           <div className="flex items-center space-x-3 mb-3">
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl p-2">
-              <AlertCircle className="w-5 h-5 text-white" />
+            <div className="bg-yellow-100 rounded-xl p-2">
+              <AlertCircle className="w-5 h-5 text-yellow-600" />
             </div>
-            <span className="text-sm font-medium text-purple-200">Pending</span>
+            <span className="text-sm font-medium text-gray-600">Pending</span>
           </div>
-          <p className="text-3xl font-bold text-yellow-400">{formatAmount(pendingAmount)}</p>
+          <p className="text-3xl font-bold text-yellow-600">{formatAmount(pendingAmount)}</p>
         </div>
       </div>
 
@@ -95,28 +95,28 @@ const BillsTab: React.FC<BillsTabProps> = ({ bills }) => {
       <div>
         <div className="space-y-4">
           {bills.map((bill) => (
-            <div key={bill.id} className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 shadow-xl">
+            <div key={bill.id} className={`bg-gradient-to-r backdrop-blur-xl border rounded-2xl p-6 hover:shadow-lg transition-all duration-300 shadow-sm ${getStatusColor(bill.status)}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="bg-white/10 rounded-xl p-3">
+                  <div className="bg-white/80 rounded-xl p-3 shadow-sm">
                     {getStatusIcon(bill.status)}
                   </div>
                   <div>
-                    <h3 className="font-bold text-white text-lg">{bill.name}</h3>
-                    <p className="text-purple-200 capitalize">{bill.category}</p>
+                    <h3 className="font-bold text-gray-900 text-lg">{bill.name}</h3>
+                    <p className="text-gray-600 capitalize">{bill.category}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-white text-xl">{formatAmount(bill.amount)}</p>
-                  <p className="text-purple-200 text-sm">Due {formatDate(bill.dueDate)}</p>
+                  <p className="font-bold text-gray-900 text-xl">{formatAmount(bill.amount)}</p>
+                  <p className="text-gray-600 text-sm">Due {formatDate(bill.dueDate)}</p>
                 </div>
               </div>
               <div className="mt-4 flex items-center justify-between">
-                <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r ${getStatusColor(bill.status)} shadow-lg`}>
+                <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium text-gray-700 bg-white/60 shadow-sm`}>
                   {bill.status.charAt(0).toUpperCase() + bill.status.slice(1)}
                 </div>
                 {bill.status === 'pending' && (
-                  <button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2 rounded-xl font-medium hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg">
+                  <button className="bg-pink-500 text-white px-6 py-2 rounded-xl font-medium hover:bg-pink-600 transition-all duration-300 shadow-lg">
                     {/* TODO: Implement payment processing */}
                     Pay Now
                   </button>

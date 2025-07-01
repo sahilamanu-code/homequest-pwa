@@ -72,21 +72,21 @@ const ListTab: React.FC<ListTabProps> = ({ lists: initialLists }) => {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-2 mb-6">
-        <ListIcon className="w-6 h-6 text-purple-400" />
-        <h2 className="text-2xl font-bold text-white">Smart Lists</h2>
+        <ListIcon className="w-6 h-6 text-gray-700" />
+        <h2 className="text-2xl font-bold text-gray-900">Smart Lists</h2>
       </div>
 
       {/* List Selector */}
-      <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl">
+      <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg">
         <div className="flex space-x-3 overflow-x-auto pb-2">
           {lists.map((list) => (
             <button
               key={list.id}
               onClick={() => setActiveListId(list.id)}
-              className={`px-6 py-3 rounded-xl font-medium whitespace-nowrap transition-all duration-300 shadow-lg ${
+              className={`px-6 py-3 rounded-xl font-medium whitespace-nowrap transition-all duration-300 shadow-sm ${
                 activeListId === list.id
-                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white scale-105'
-                  : 'bg-white/10 text-purple-200 hover:bg-white/20 hover:text-white'
+                  ? 'bg-pink-500 text-white scale-105'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900'
               }`}
             >
               {list.name}
@@ -97,8 +97,8 @@ const ListTab: React.FC<ListTabProps> = ({ lists: initialLists }) => {
 
       {/* Active List */}
       {activeList && (
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-xl">
-          <h3 className="text-xl font-bold text-white mb-6">{activeList.name}</h3>
+        <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg">
+          <h3 className="text-xl font-bold text-gray-900 mb-6">{activeList.name}</h3>
           
           {/* Add Item */}
           <div className="flex space-x-3 mb-6">
@@ -108,11 +108,11 @@ const ListTab: React.FC<ListTabProps> = ({ lists: initialLists }) => {
               onChange={(e) => setNewItemText(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && addItem(activeList.id)}
               placeholder="Add new item..."
-              className="flex-1 px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-purple-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent backdrop-blur-xl"
+              className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-pink-500 focus:border-transparent backdrop-blur-xl"
             />
             <button
               onClick={() => addItem(activeList.id)}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white p-3 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 shadow-lg"
+              className="bg-pink-500 text-white p-3 rounded-xl hover:bg-pink-600 transition-all duration-300 shadow-lg"
             >
               <Plus className="w-5 h-5" />
             </button>
@@ -125,8 +125,8 @@ const ListTab: React.FC<ListTabProps> = ({ lists: initialLists }) => {
                 key={item.id}
                 className={`flex items-center space-x-4 p-4 rounded-xl border transition-all duration-300 ${
                   item.completed
-                    ? 'bg-green-500/10 border-green-500/20'
-                    : 'bg-white/5 border-white/10 hover:bg-white/10'
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100'
                 }`}
               >
                 <button
@@ -134,7 +134,7 @@ const ListTab: React.FC<ListTabProps> = ({ lists: initialLists }) => {
                   className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                     item.completed
                       ? 'bg-green-500 border-green-500 scale-110'
-                      : 'border-purple-400 hover:border-purple-300'
+                      : 'border-gray-400 hover:border-gray-600'
                   }`}
                 >
                   {item.completed && <Check className="w-4 h-4 text-white" />}
@@ -142,15 +142,15 @@ const ListTab: React.FC<ListTabProps> = ({ lists: initialLists }) => {
                 <span
                   className={`flex-1 transition-all duration-300 ${
                     item.completed
-                      ? 'text-green-300 line-through opacity-75'
-                      : 'text-white'
+                      ? 'text-green-700 line-through opacity-75'
+                      : 'text-gray-900'
                   }`}
                 >
                   {item.text}
                 </span>
                 <button
                   onClick={() => removeItem(activeList.id, item.id)}
-                  className="text-red-400 hover:text-red-300 p-1 rounded-lg hover:bg-red-500/10 transition-all duration-300"
+                  className="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-all duration-300"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -159,7 +159,7 @@ const ListTab: React.FC<ListTabProps> = ({ lists: initialLists }) => {
           </div>
 
           {activeList.items.length === 0 && (
-            <div className="text-center py-12 text-purple-200">
+            <div className="text-center py-12 text-gray-600">
               <div className="text-4xl mb-4">📝</div>
               <p className="text-lg">No items in this list yet.</p>
               <p className="text-sm opacity-75">Add your first item above!</p>
