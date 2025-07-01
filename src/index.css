@@ -18,6 +18,15 @@
   .animation-delay-1000 {
     animation-delay: 1000ms;
   }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes fadeIn {
@@ -39,5 +48,36 @@
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Ensure text doesn't overflow */
+  .break-words {
+    word-wrap: break-word;
+    word-break: break-word;
+  }
+  
+  /* Fix button text wrapping */
+  button {
+    word-wrap: break-word;
+  }
+  
+  /* Ensure cards don't overflow */
+  .rounded-2xl, .rounded-xl {
+    overflow: hidden;
+  }
+}
+
+/* Fix for mobile viewport */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen {
+    min-height: -webkit-fill-available;
   }
 }
