@@ -1,0 +1,122 @@
+{
+  "user": {
+    "id": "user123",
+    "name": "Alex Smith",
+    "email": "alex@example.com",
+    "xp": 2450,
+    "level": 12,
+    "xpToNextLevel": 500,
+    "streak": 7,
+    "avatar": "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop"
+  },
+  "chores": [
+    {
+      "id": "1",
+      "title": "Take out trash",
+      "description": "Empty all bins and take to curb",
+      "xpReward": 25,
+      "completed": false,
+      "dueDate": "2025-01-09",
+      "category": "cleaning"
+    },
+    {
+      "id": "2",
+      "title": "Load dishwasher",
+      "description": "Load dirty dishes and start cycle",
+      "xpReward": 15,
+      "completed": false,
+      "dueDate": "2025-01-09",
+      "category": "kitchen"
+    },
+    {
+      "id": "3",
+      "title": "Vacuum living room",
+      "description": "Vacuum carpet and under furniture",
+      "xpReward": 30,
+      "completed": true,
+      "dueDate": "2025-01-08",
+      "category": "cleaning"
+    },
+    {
+      "id": "4",
+      "title": "Water plants",
+      "description": "Water all indoor plants",
+      "xpReward": 20,
+      "completed": false,
+      "dueDate": "2025-01-10",
+      "category": "plants"
+    }
+  ],
+  "bills": [
+    {
+      "id": "1",
+      "name": "Electric Bill",
+      "amount": 145.50,
+      "dueDate": "2025-01-15",
+      "status": "pending",
+      "category": "utilities"
+    },
+    {
+      "id": "2",
+      "name": "Internet",
+      "amount": 79.99,
+      "dueDate": "2025-01-20",
+      "status": "paid",
+      "category": "utilities"
+    },
+    {
+      "id": "3",
+      "name": "Mortgage",
+      "amount": 1850.00,
+      "dueDate": "2025-01-01",
+      "status": "paid",
+      "category": "housing"
+    }
+  ],
+  "lists": [
+    {
+      "id": "1",
+      "name": "Grocery List",
+      "items": [
+        { "id": "1", "text": "Milk", "completed": false },
+        { "id": "2", "text": "Bread", "completed": true },
+        { "id": "3", "text": "Eggs", "completed": false },
+        { "id": "4", "text": "Apples", "completed": false }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Weekend Projects",
+      "items": [
+        { "id": "5", "text": "Fix leaky faucet", "completed": false },
+        { "id": "6", "text": "Paint bedroom", "completed": false }
+      ]
+    }
+  ],
+  "feed": [
+    {
+      "id": "1",
+      "type": "achievement",
+      "title": "Level Up!",
+      "description": "You reached level 12! Keep up the great work!",
+      "timestamp": "2025-01-08T14:30:00Z",
+      "xp": 100
+    },
+    {
+      "id": "2",
+      "type": "chore_complete",
+      "title": "Chore Completed",
+      "description": "Vacuumed living room (+30 XP)",
+      "timestamp": "2025-01-08T10:15:00Z",
+      "xp": 30
+    },
+    {
+      "id": "3",
+      "type": "streak",
+      "title": "7-Day Streak!",
+      "description": "You've completed tasks for 7 days in a row!",
+      "timestamp": "2025-01-08T09:00:00Z",
+      "xp": 50
+    }
+  ]
+}
