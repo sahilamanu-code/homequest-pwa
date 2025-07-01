@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
+import { useFirestoreData } from './hooks/useFirestoreData';
 import AuthScreen from './components/AuthScreen';
 import Dashboard from './components/Dashboard';
 import OnboardingScreen from './components/OnboardingScreen';
 
 function App() {
   const { user, loading } = useAuth();
+  const { updateUserProfile, addBill } = useFirestoreData();
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
@@ -40,13 +42,64 @@ function App() {
     }
   }, [user]);
 
-  const handleOnboardingComplete = (data: any) => {
+  const handleOnboardingComplete = async (data: any) => {
     console.log('Onboarding completed with data:', data);
     localStorage.setItem('homequest_onboarded', 'true');
-    setShowOnboarding(false);
     
-    // TODO: Save onboarding data to Firebase
-    // This would include creating schedules, setting up bills, etc.
+    try {
+      // Update user profile with onboarding data
+      await updateUserProfile({
+        homeName: data.homeName,
+        address: data.address,
+        roommates: data.roommates
+      });
+
+      // Create bills based on onboarding selections
+      if (data.bills.rent.enabled && data.bills.rent.amount && data.bills.rent.dueDate) {
+        await addBill({
+          name: 'Rent/Mortgage',
+          amount: parseFloat(data.bills.rent.amount.replace(/[^0-9.]/g, '')),
+          dueDate: data.bills.rent.dueDate,
+          status: 'pending',
+          category: 'housing',
+          recurring: true
+        });
+      }
+
+      if (data.bills.utilities.enabled && data.bills.utilities.amount && data.bills.utilities.lastPaid) {
+        // Calculate next utility payment date (assuming monthly)
+        const lastPaid = new Date(data.bills.utilities.lastPaid);
+        const nextDue = new Date(lastPaid);
+        nextDue.setMonth(nextDue.getMonth() + 1);
+        
+        await addBill({
+          name: 'Utilities',
+          amount: parseFloat(data.bills.utilities.amount.replace(/[^0-9.]/g, '')),
+          dueDate: nextDue.toISOString().split('T')[0],
+          status: 'pending',
+          category: 'utilities',
+          recurring: true
+        });
+      }
+
+      // Add custom bills
+      for (const customBill of data.bills.custom) {
+        if (customBill.name && customBill.amount && customBill.dueDate) {
+          await addBill({
+            name: customBill.name,
+            amount: parseFloat(customBill.amount.replace(/[^0-9.]/g, '')),
+            dueDate: customBill.dueDate,
+            status: 'pending',
+            category: 'custom',
+            recurring: false
+          });
+        }
+      }
+
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Error saving onboarding data:', error);
+    }
   };
 
   if (loading) {

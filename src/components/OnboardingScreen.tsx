@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Home, Users, Calendar, Sparkles, ArrowRight, Check } from 'lucide-react';
+import { Home, Users, Calendar, Sparkles, ArrowRight, Check, DollarSign, CreditCard } from 'lucide-react';
 
 interface OnboardingData {
   homeName: string;
   roommates: number;
   needsLaundrySchedule: boolean;
-  rentAmount: string;
-  lastUtilityPayment: string;
+  address: string;
+  bills: {
+    rent: { enabled: boolean; amount: string; dueDate: string };
+    utilities: { enabled: boolean; amount: string; lastPaid: string };
+    custom: Array<{ name: string; amount: string; dueDate: string }>;
+  };
 }
 
 interface OnboardingScreenProps {
@@ -19,11 +23,15 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
     homeName: '',
     roommates: 1,
     needsLaundrySchedule: false,
-    rentAmount: '',
-    lastUtilityPayment: ''
+    address: '',
+    bills: {
+      rent: { enabled: false, amount: '', dueDate: '' },
+      utilities: { enabled: false, amount: '', lastPaid: '' },
+      custom: []
+    }
   });
 
-  const totalSteps = 5;
+  const totalSteps = 7;
 
   const handleNext = () => {
     if (step < totalSteps) {
@@ -37,6 +45,38 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
     if (step > 1) {
       setStep(step - 1);
     }
+  };
+
+  const addCustomBill = () => {
+    setData(prev => ({
+      ...prev,
+      bills: {
+        ...prev.bills,
+        custom: [...prev.bills.custom, { name: '', amount: '', dueDate: '' }]
+      }
+    }));
+  };
+
+  const updateCustomBill = (index: number, field: string, value: string) => {
+    setData(prev => ({
+      ...prev,
+      bills: {
+        ...prev.bills,
+        custom: prev.bills.custom.map((bill, i) => 
+          i === index ? { ...bill, [field]: value } : bill
+        )
+      }
+    }));
+  };
+
+  const removeCustomBill = (index: number) => {
+    setData(prev => ({
+      ...prev,
+      bills: {
+        ...prev.bills,
+        custom: prev.bills.custom.filter((_, i) => i !== index)
+      }
+    }));
   };
 
   const renderStep = () => {
@@ -58,7 +98,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
                 </div>
                 <div className="text-left">
                   <h3 className="font-semibold text-blue-900">What we'll set up:</h3>
-                  <p className="text-blue-700 text-sm">Home details, schedules, and smart reminders</p>
+                  <p className="text-blue-700 text-sm">Home details, schedules, bills, and smart reminders</p>
                 </div>
               </div>
             </div>
@@ -182,41 +222,192 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         return (
           <div className="space-y-6 animate-slide-in">
             <div className="text-center">
-              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Calendar className="w-8 h-8 text-white" />
+              <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Home className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Let's set up bill reminders</h2>
-              <p className="text-gray-600">We'll calculate when your next payments are due</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Where is your home?</h2>
+              <p className="text-gray-600">We'll use this for weather and local features</p>
             </div>
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Monthly rent amount (optional)
-                </label>
-                <input
-                  type="text"
-                  value={data.rentAmount}
-                  onChange={(e) => setData({ ...data, rentAmount: e.target.value })}
-                  placeholder="e.g., $1200"
-                  className="w-full px-4 py-3 bg-white/80 backdrop-blur-xl border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  When did you last pay utilities?
-                </label>
-                <input
-                  type="date"
-                  value={data.lastUtilityPayment}
-                  onChange={(e) => setData({ ...data, lastUtilityPayment: e.target.value })}
-                  className="w-full px-4 py-3 bg-white/80 backdrop-blur-xl border border-gray-200 rounded-xl text-gray-900 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
-                />
-              </div>
+              <input
+                type="text"
+                value={data.address}
+                onChange={(e) => setData({ ...data, address: e.target.value })}
+                placeholder="e.g., New York, NY or London, UK"
+                className="w-full px-4 py-3 bg-white/80 backdrop-blur-xl border border-gray-200 rounded-xl text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+              />
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                 <p className="text-blue-700 text-sm">
-                  💡 We'll automatically calculate your next payment dates and send you friendly reminders!
+                  🌤️ We'll show you local weather and can suggest seasonal tasks!
                 </p>
               </div>
+            </div>
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6 animate-slide-in">
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <CreditCard className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Which bills should we track?</h2>
+              <p className="text-gray-600">Select the bills you want reminders for</p>
+            </div>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-3">
+                <button
+                  onClick={() => setData(prev => ({
+                    ...prev,
+                    bills: { ...prev.bills, rent: { ...prev.bills.rent, enabled: !prev.bills.rent.enabled } }
+                  }))}
+                  className={`p-4 rounded-xl border-2 transition-all duration-300 flex items-center space-x-3 ${
+                    data.bills.rent.enabled
+                      ? 'border-green-500 bg-green-50 text-green-700'
+                      : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
+                  }`}
+                >
+                  <div className="text-2xl">🏠</div>
+                  <div className="text-left">
+                    <div className="font-semibold">Rent/Mortgage</div>
+                    <div className="text-sm opacity-75">Monthly housing payment</div>
+                  </div>
+                  {data.bills.rent.enabled && <Check className="w-5 h-5 ml-auto" />}
+                </button>
+
+                <button
+                  onClick={() => setData(prev => ({
+                    ...prev,
+                    bills: { ...prev.bills, utilities: { ...prev.bills.utilities, enabled: !prev.bills.utilities.enabled } }
+                  }))}
+                  className={`p-4 rounded-xl border-2 transition-all duration-300 flex items-center space-x-3 ${
+                    data.bills.utilities.enabled
+                      ? 'border-green-500 bg-green-50 text-green-700'
+                      : 'border-gray-200 bg-white hover:border-gray-300 text-gray-700'
+                  }`}
+                >
+                  <div className="text-2xl">⚡</div>
+                  <div className="text-left">
+                    <div className="font-semibold">Utilities</div>
+                    <div className="text-sm opacity-75">Electric, water, gas, internet</div>
+                  </div>
+                  {data.bills.utilities.enabled && <Check className="w-5 h-5 ml-auto" />}
+                </button>
+              </div>
+
+              <div className="border-t border-gray-200 pt-4">
+                <button
+                  onClick={addCustomBill}
+                  className="w-full p-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-all duration-300"
+                >
+                  + Add Custom Bill
+                </button>
+                
+                {data.bills.custom.map((bill, index) => (
+                  <div key={index} className="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                    <input
+                      type="text"
+                      placeholder="Bill name (e.g., Phone, Insurance)"
+                      value={bill.name}
+                      onChange={(e) => updateCustomBill(index, 'name', e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm mb-2"
+                    />
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        placeholder="Amount"
+                        value={bill.amount}
+                        onChange={(e) => updateCustomBill(index, 'amount', e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                      />
+                      <input
+                        type="date"
+                        value={bill.dueDate}
+                        onChange={(e) => updateCustomBill(index, 'dueDate', e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm"
+                      />
+                      <button
+                        onClick={() => removeCustomBill(index)}
+                        className="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-all"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 7:
+        return (
+          <div className="space-y-6 animate-slide-in">
+            <div className="text-center">
+              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <DollarSign className="w-8 h-8 text-white" />
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Bill details</h2>
+              <p className="text-gray-600">Let's set up your selected bills</p>
+            </div>
+            <div className="space-y-4">
+              {data.bills.rent.enabled && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <h3 className="font-semibold text-blue-900 mb-3">🏠 Rent/Mortgage</h3>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Monthly amount (e.g., $1200)"
+                      value={data.bills.rent.amount}
+                      onChange={(e) => setData(prev => ({
+                        ...prev,
+                        bills: { ...prev.bills, rent: { ...prev.bills.rent, amount: e.target.value } }
+                      }))}
+                      className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg"
+                    />
+                    <input
+                      type="date"
+                      value={data.bills.rent.dueDate}
+                      onChange={(e) => setData(prev => ({
+                        ...prev,
+                        bills: { ...prev.bills, rent: { ...prev.bills.rent, dueDate: e.target.value } }
+                      }))}
+                      className="w-full px-3 py-2 bg-white border border-blue-200 rounded-lg"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {data.bills.utilities.enabled && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-xl">
+                  <h3 className="font-semibold text-green-900 mb-3">⚡ Utilities</h3>
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      placeholder="Average monthly amount (e.g., $150)"
+                      value={data.bills.utilities.amount}
+                      onChange={(e) => setData(prev => ({
+                        ...prev,
+                        bills: { ...prev.bills, utilities: { ...prev.bills.utilities, amount: e.target.value } }
+                      }))}
+                      className="w-full px-3 py-2 bg-white border border-green-200 rounded-lg"
+                    />
+                    <input
+                      type="date"
+                      value={data.bills.utilities.lastPaid}
+                      onChange={(e) => setData(prev => ({
+                        ...prev,
+                        bills: { ...prev.bills, utilities: { ...prev.bills.utilities, lastPaid: e.target.value } }
+                      }))}
+                      className="w-full px-3 py-2 bg-white border border-green-200 rounded-lg"
+                    />
+                    <p className="text-green-700 text-sm">
+                      💡 We'll calculate your next payment date automatically!
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -237,6 +428,10 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
       case 4:
         return true;
       case 5:
+        return data.address.trim().length > 0;
+      case 6:
+        return true;
+      case 7:
         return true;
       default:
         return false;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CheckSquare, CreditCard, List, User, LogOut, Menu, Download, Home, Plus } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
-import { useMockData } from '../hooks/useMockData';
+import { useFirestoreData } from '../hooks/useFirestoreData';
 import XPBar from './XPBar';
 import ChoresTab from './tabs/ChoresTab';
 import BillsTab from './tabs/BillsTab';
@@ -14,7 +14,7 @@ const Dashboard: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const { logout } = useAuth();
-  const { data, loading, updateChore, updateUserXP } = useMockData();
+  const { data, loading, updateChore, updateUserXP, createInitialData } = useFirestoreData();
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -29,6 +29,13 @@ const Dashboard: React.FC = () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
+
+  useEffect(() => {
+    // Create initial data if user has no data
+    if (data && data.chores.length === 0 && data.lists.length === 0 && data.feed.length === 0) {
+      createInitialData();
+    }
+  }, [data, createInitialData]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -60,7 +67,7 @@ const Dashboard: React.FC = () => {
     { id: 'profile', label: 'Profile', icon: User },
   ];
 
-  if (loading || !data) {
+  if (loading || !data || !data.user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="relative">
@@ -74,7 +81,7 @@ const Dashboard: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'home':
-        return <HomeTab feed={data.feed} chores={data.chores} onChoreComplete={handleChoreComplete} />;
+        return <HomeTab feed={data.feed} chores={data.chores} onChoreComplete={handleChoreComplete} user={data.user} />;
       case 'chores':
         return <ChoresTab chores={data.chores} onChoreComplete={handleChoreComplete} />;
       case 'bills':
@@ -84,7 +91,7 @@ const Dashboard: React.FC = () => {
       case 'profile':
         return <ProfileTab user={data.user} onLogout={logout} />;
       default:
-        return <HomeTab feed={data.feed} chores={data.chores} onChoreComplete={handleChoreComplete} />;
+        return <HomeTab feed={data.feed} chores={data.chores} onChoreComplete={handleChoreComplete} user={data.user} />;
     }
   };
 
