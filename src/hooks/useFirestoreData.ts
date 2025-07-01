@@ -167,113 +167,90 @@ export const useFirestoreData = () => {
     const setupRealtimeListeners = () => {
       const unsubscribers: (() => void)[] = [];
 
-      // Chores listener with error handling
-      const choresQuery = query(
-        collection(db, 'chores'),
-        where('userId', '==', authUser.uid),
-        orderBy('createdAt', 'desc')
-      );
-      const unsubChores = onSnapshot(
-        choresQuery, 
-        (snapshot) => {
-          const chores = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Chore[];
-          setData(prevData => ({
-            ...prevData!,
-            chores
-          }));
-        },
-        (error) => {
-          console.error('Error in chores listener:', error);
-          if (error.code === 'permission-denied') {
-            setError('Permission denied accessing chores. Please check your Firebase security rules.');
-          }
+      // Helper function to create listener with fallback
+      const createListenerWithFallback = async (
+        collectionName: string,
+        dataKey: keyof FirestoreData,
+        retryCount = 0
+      ) => {
+        try {
+          const q = query(
+            collection(db, collectionName),
+            where('userId', '==', authUser.uid),
+            orderBy('createdAt', 'desc')
+          );
+          
+          const unsubscribe = onSnapshot(
+            q,
+            (snapshot) => {
+              const items = snapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }));
+              setData(prevData => ({
+                ...prevData!,
+                [dataKey]: items
+              }));
+            },
+            (error) => {
+              console.error(`Error in ${collectionName} listener:`, error);
+              
+              // If it's an index error and we haven't retried too many times
+              if (error.message.includes('index') && retryCount < 3) {
+                console.log(`Retrying ${collectionName} listener in 5 seconds...`);
+                setTimeout(() => {
+                  createListenerWithFallback(collectionName, dataKey, retryCount + 1);
+                }, 5000);
+              } else if (error.code === 'permission-denied') {
+                setError(`Permission denied accessing ${collectionName}. Please check your Firebase security rules.`);
+              } else if (error.message.includes('index')) {
+                // For index errors, try a simpler query without ordering
+                console.log(`Falling back to simple query for ${collectionName}`);
+                const simpleQuery = query(
+                  collection(db, collectionName),
+                  where('userId', '==', authUser.uid)
+                );
+                
+                const fallbackUnsubscribe = onSnapshot(
+                  simpleQuery,
+                  (snapshot) => {
+                    const items = snapshot.docs.map(doc => ({
+                      id: doc.id,
+                      ...doc.data()
+                    }));
+                    // Sort manually by createdAt
+                    items.sort((a: any, b: any) => {
+                      const aTime = a.createdAt?.toMillis() || 0;
+                      const bTime = b.createdAt?.toMillis() || 0;
+                      return bTime - aTime;
+                    });
+                    setData(prevData => ({
+                      ...prevData!,
+                      [dataKey]: items
+                    }));
+                  },
+                  (fallbackError) => {
+                    console.error(`Fallback error for ${collectionName}:`, fallbackError);
+                    setError(`Failed to load ${collectionName}. Please refresh the page.`);
+                  }
+                );
+                unsubscribers.push(fallbackUnsubscribe);
+              }
+            }
+          );
+          
+          unsubscribers.push(unsubscribe);
+        } catch (error: any) {
+          console.error(`Error setting up ${collectionName} listener:`, error);
+          setError(`Failed to set up ${collectionName} listener. Please refresh the page.`);
         }
-      );
-      unsubscribers.push(unsubChores);
+      };
 
-      // Bills listener with error handling
-      const billsQuery = query(
-        collection(db, 'bills'),
-        where('userId', '==', authUser.uid),
-        orderBy('createdAt', 'desc')
-      );
-      const unsubBills = onSnapshot(
-        billsQuery, 
-        (snapshot) => {
-          const bills = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Bill[];
-          setData(prevData => ({
-            ...prevData!,
-            bills
-          }));
-        },
-        (error) => {
-          console.error('Error in bills listener:', error);
-          if (error.code === 'permission-denied') {
-            setError('Permission denied accessing bills. Please check your Firebase security rules.');
-          }
-        }
-      );
-      unsubscribers.push(unsubBills);
-
-      // Lists listener with error handling
-      const listsQuery = query(
-        collection(db, 'lists'),
-        where('userId', '==', authUser.uid),
-        orderBy('createdAt', 'desc')
-      );
-      const unsubLists = onSnapshot(
-        listsQuery, 
-        (snapshot) => {
-          const lists = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as List[];
-          setData(prevData => ({
-            ...prevData!,
-            lists
-          }));
-        },
-        (error) => {
-          console.error('Error in lists listener:', error);
-          if (error.code === 'permission-denied') {
-            setError('Permission denied accessing lists. Please check your Firebase security rules.');
-          }
-        }
-      );
-      unsubscribers.push(unsubLists);
-
-      // Feed listener with error handling
-      const feedQuery = query(
-        collection(db, 'feed'),
-        where('userId', '==', authUser.uid),
-        orderBy('createdAt', 'desc')
-      );
-      const unsubFeed = onSnapshot(
-        feedQuery, 
-        (snapshot) => {
-          const feed = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as FeedItem[];
-          setData(prevData => ({
-            ...prevData!,
-            feed
-          }));
-        },
-        (error) => {
-          console.error('Error in feed listener:', error);
-          if (error.code === 'permission-denied') {
-            setError('Permission denied accessing feed. Please check your Firebase security rules.');
-          }
-        }
-      );
-      unsubscribers.push(unsubFeed);
+      // Set up listeners for each collection
+      createListenerWithFallback('chores', 'chores');
+      createListenerWithFallback('bills', 'bills');
+      createListenerWithFallback('lists', 'lists');
+      createListenerWithFallback('feed', 'feed');
 
       return () => {
         unsubscribers.forEach(unsub => unsub());
